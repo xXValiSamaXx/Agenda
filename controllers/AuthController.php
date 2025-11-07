@@ -116,8 +116,8 @@ class AuthController {
         header("Cache-Control: post-check=0, pre-check=0", false);
         header("Pragma: no-cache");
         
-        // Redirigir a la página de inicio
-        header("Location: " . BASE_URL . "index.php");
+        // Redirigir a la página de login (no a index.php directamente)
+        header("Location: " . BASE_URL . "?page=login");
         exit();
     }
 

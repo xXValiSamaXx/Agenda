@@ -8,7 +8,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>css/main.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
     <!-- Personalización de colores morados -->
@@ -102,17 +102,17 @@
     <div id="carousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           <div class="carousel-item active" data-bs-interval="3000">
-            <img src="./Imagenes/slide1.jpg" class="d-block w-100" alt="">
+            <img src="<?= BASE_URL ?>Imagenes/slide1.jpg" class="d-block w-100" alt="">
           </div>
           
  
           <div class="carousel-item" data-bs-interval="3000">
-            <img src="./Imagenes/slide2.jpg" class="d-block w-100" alt="...">
+            <img src="<?= BASE_URL ?>Imagenes/slide2.jpg" class="d-block w-100" alt="...">
           </div>
  
 
           <div class="carousel-item" data-bs-interval="3000">
-            <img src="./Imagenes/slide3.jpg" class="d-block w-100" alt="...">
+            <img src="<?= BASE_URL ?>Imagenes/slide3.jpg" class="d-block w-100" alt="...">
           </div>
  
  
@@ -141,7 +141,7 @@
 <section class="w-100">
     <div class="row w-75 mx-auto" id="servicios-fila-1">       
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-start my-5 icono-wrap">
-            <img src="./Imagenes/desarrollo.png" alt="desarrollo"   width="180" height="160">
+            <img src="<?= BASE_URL ?>Imagenes/desarrollo.png" alt="desarrollo"   width="180" height="160">
 
             <div>
                 <h3 class="fs-5 mt-4 px-4 pb-1">Mis activades</h3>
@@ -151,7 +151,7 @@
         </div>
 
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-start  my-5 icono-wrap">
-            <img src="./Imagenes/concepto.png" alt="concepto" width="180" height="160">
+            <img src="<?= BASE_URL ?>Imagenes/concepto.png" alt="concepto" width="180" height="160">
 
             <div>
                 <h3 class="fs-5 mt-4 px-4 pb-1 icono-wrap">Recordatorio</h3>
@@ -162,7 +162,7 @@
     
     <div class="row w-75 mx-auto mb-5" id="servicios-fila-2">       
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-start  my-5 icono-wrap">
-            <img src="./Imagenes/comunicaciones.png" alt="comunicaciones" width="180" height="160">
+            <img src="<?= BASE_URL ?>Imagenes/comunicaciones.png" alt="comunicaciones" width="180" height="160">
 
             <div>
                 <h3 class="fs-5 mt-4 px-4 pb-1">Pagina</h3>
@@ -171,13 +171,13 @@
         </div>
 
         <div class="col-lg-6 col-md-12 col-sm-12 d-flex justify-content-start my-5 icono-wrap">
-            <img src="./Imagenes/seo.png" alt="seo" width="180" height="160" >
+            <img src="<?= BASE_URL ?>Imagenes/seo.png" alt="seo" width="180" height="160" >
 
             <div>
                 <h3 class="fs-5 mt-4 px-4 pb-1">SEO</h3>
                 <p class="px-4">Analizamos la eficiencia y estamos mejorando dia con dia</p>
             </div>
-        </div>   
+        </div>
     </div>
 </section>
 
@@ -191,7 +191,7 @@
     </div>
 
     <div class="mt-5 text-center">
-        <img id="img-equipo" src="./Imagenes/equipo.jpg" alt="equipo">
+        <img id="img-equipo" src="<?= BASE_URL ?>Imagenes/equipo.jpg" alt="equipo">
     </div>
 
     <div id="local" class="border-top border-2">
@@ -240,7 +240,7 @@
 
 <div class="container border-top border-primary" style="max-width: 500px" id="contenedor-formulario">
   <div class="text-center mb-4" id="titulo-formulario">
-    <div><img src="./Imagenes/support.png" alt="" class="img-fluid ps-5"></div>
+    <div><img src="<?= BASE_URL ?>Imagenes/support.png" alt="" class="img-fluid ps-5"></div>
     <h2>Contactanos</h2>
     <p class="fs-5">Estamos aquí para hacer realidad de tus proyectos</p>
   </div>

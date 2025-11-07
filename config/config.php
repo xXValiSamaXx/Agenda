@@ -28,8 +28,16 @@ define('VIEWS_PATH', BASE_PATH . '/views/');
 define('CONTROLLERS_PATH', BASE_PATH . '/controllers/');
 define('PUBLIC_PATH', BASE_PATH . '/public/');
 
-// URL base de la aplicación
-define('BASE_URL', '/Agenda/');
+// URL base de la aplicación - Detección automática
+// Funciona tanto en localhost/Agenda como en servidor/raíz
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+$host = $_SERVER['HTTP_HOST'];
+$scriptName = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+$baseDir = ($scriptName === '/' || $scriptName === '\\') ? '/' : rtrim($scriptName, '/') . '/';
+
+// Definir BASE_URL completa y relativa
+define('BASE_URL', $baseDir);
+define('FULL_URL', $protocol . $host . $baseDir);
 
 // Autoloader simple para clases
 spl_autoload_register(function ($class_name) {
