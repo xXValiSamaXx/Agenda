@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         sqlsrv_query($conn, $queryAcademica, $paramsAcademica);
 
         // Redirigir al usuario a la página de inicio de sesión
-        header("Location: Login.php");
+        header("Location: index.php?page=login");
         exit();
     }
 }

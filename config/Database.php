@@ -4,10 +4,10 @@
  * Maneja la conexión a SQL Server
  */
 class Database {
-    private $serverName = "PC_ValiSama";
+    private $serverName = "bdagenda.c6z2gwa2ebvc.us-east-1.rds.amazonaws.com,1433";
     private $database = "BD_Agenda";
-    private $uid = "";
-    private $pwd = "";
+    private $uid = "admin";
+    private $pwd = "v7c1Mj*X6";
     private $conn = null;
 
     /**

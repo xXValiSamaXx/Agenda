@@ -43,10 +43,10 @@ class AuthController {
                     if ($tipo == 'Admi') {
                         header("Location: " . BASE_URL . "?page=admin");
                         exit();
+                    } else {
+                        header("Location: " . BASE_URL . "?page=academicas");
+                        exit();
                     }
-
-                    header("Location: " . BASE_URL . "?page=academicas");
-                    exit();
                 } else {
                     $mensajeError = "Nombre de usuario o contraseña incorrectos.";
                 }

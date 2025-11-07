@@ -43,7 +43,7 @@
               </li>
             </ul>
             <form class="d-flex">
-              <a href="Login.php" class="button">Iniciar Sesión</a>
+              <a href="<?= BASE_URL ?>?page=login" class="button">Iniciar Sesión</a>
             </form>
           </div>
 

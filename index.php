@@ -71,6 +71,21 @@ switch ($page) {
         $controller->carreras();
         break;
 
+    case 'crear-carrera':
+        $controller = new AdminController();
+        $controller->crearCarrera();
+        break;
+
+    case 'actualizar-carrera':
+        $controller = new AdminController();
+        $controller->actualizarCarrera();
+        break;
+
+    case 'eliminar-carrera':
+        $controller = new AdminController();
+        $controller->eliminarCarrera();
+        break;
+
     // Ruta por defecto
     default:
         $controller = new HomeController();
