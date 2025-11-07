@@ -56,7 +56,7 @@
         </div>
         <div>
             <h3>Redes</h3>
-            <a href="https://github.com/xXValiSamaXx/Proyecto-WEB">Github</a>
+            <a href="https://github.com/xXValiSamaXx/Agenda">Github</a>
         </div>
     </div>
 </footer>
