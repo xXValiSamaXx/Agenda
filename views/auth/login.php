@@ -58,14 +58,5 @@
             <a href="<?= BASE_URL ?>?page=registrarse" class="btn btn-link">Registrate</a>
         </div>
     </form>
-    
-    <!-- Información de debug -->
-    <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; font-size: 12px; max-width: 300px;">
-        <strong>Debug Info:</strong><br>
-        BASE_URL: <?= BASE_URL ?><br>
-        Action: <?= BASE_URL ?>?page=login<br>
-        Method: POST<br>
-        <em>Abre la consola del navegador (F12) para más información</em>
-    </div>
 </body>
 </html>
