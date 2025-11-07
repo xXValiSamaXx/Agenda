@@ -20,7 +20,9 @@ class Database {
                 "Database" => $this->database,
                 "Uid" => $this->uid,
                 "PWD" => $this->pwd,
-                "CharacterSet" => "UTF-8"
+                "CharacterSet" => "UTF-8",
+                "TrustServerCertificate" => true,
+                "Encrypt" => false
             );
 
             $this->conn = sqlsrv_connect($this->serverName, $connectionOptions);
