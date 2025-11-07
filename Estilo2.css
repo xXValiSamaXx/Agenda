@@ -84,6 +84,24 @@ button#next1, button#prev1, button[type="submit"] {
     width: 100%;
 }
 
+/* Estilos para enlaces y navegación */
+.text-center {
+    text-align: center;
+}
+
+.btn-link {
+    color: #00ADEF;
+    text-decoration: none;
+    font-size: 15px;
+    transition: color 0.3s ease;
+    display: inline-block;
+}
+
+.btn-link:hover {
+    color: #04b8ff;
+    text-decoration: underline;
+}
+
 /* Media query para telefonos */
 @media only screen and (max-width: 600px) {
     form {

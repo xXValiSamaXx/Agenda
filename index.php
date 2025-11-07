@@ -86,6 +86,26 @@ switch ($page) {
         $controller->eliminarCarrera();
         break;
 
+    case 'usuarios':
+        $controller = new AdminController();
+        $controller->usuarios();
+        break;
+
+    case 'crear-usuario':
+        $controller = new AdminController();
+        $controller->crearUsuario();
+        break;
+
+    case 'actualizar-usuario':
+        $controller = new AdminController();
+        $controller->actualizarUsuario();
+        break;
+
+    case 'eliminar-usuario':
+        $controller = new AdminController();
+        $controller->eliminarUsuario();
+        break;
+
     // Ruta por defecto
     default:
         $controller = new HomeController();

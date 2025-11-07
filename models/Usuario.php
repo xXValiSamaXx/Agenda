@@ -88,5 +88,100 @@ class Usuario {
         }
         return false;
     }
+
+    /**
+     * Obtiene todos los usuarios del sistema
+     * @return array Lista de usuarios
+     */
+    public function obtenerTodos() {
+        $query = "SELECT u.*, t.tipo as tipo_usuario 
+                  FROM dbo.Usuarios u 
+                  INNER JOIN dbo.Tiposusuarios t ON u.tiposusuariosid = t.ID_tiposusuarios 
+                  ORDER BY u.nombre";
+        $stmt = sqlsrv_query($this->conn, $query);
+        
+        $usuarios = [];
+        if ($stmt !== false) {
+            while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+                $usuarios[] = $row;
+            }
+        }
+        return $usuarios;
+    }
+
+    /**
+     * Obtiene todos los tipos de usuario
+     * @return array Lista de tipos de usuario
+     */
+    public function obtenerTiposUsuario() {
+        $query = "SELECT * FROM dbo.Tiposusuarios ORDER BY tipo";
+        $stmt = sqlsrv_query($this->conn, $query);
+        
+        $tipos = [];
+        if ($stmt !== false) {
+            while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC)) {
+                $tipos[] = $row;
+            }
+        }
+        return $tipos;
+    }
+
+    /**
+     * Actualiza un usuario existente
+     * @param int $id ID del usuario
+     * @param array $datos Datos a actualizar
+     * @return bool True si se actualizó correctamente
+     */
+    public function actualizar($id, $datos) {
+        if (!empty($datos['contrasena'])) {
+            // Si se proporciona nueva contraseña
+            $query = "UPDATE dbo.Usuarios SET nombre = ?, contrasenas = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
+            $params = array(
+                $datos['nombre'],
+                password_hash($datos['contrasena'], PASSWORD_DEFAULT),
+                $datos['tiposusuarioid'],
+                $id
+            );
+        } else {
+            // Sin cambiar contraseña
+            $query = "UPDATE dbo.Usuarios SET nombre = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
+            $params = array(
+                $datos['nombre'],
+                $datos['tiposusuarioid'],
+                $id
+            );
+        }
+        
+        $stmt = sqlsrv_query($this->conn, $query, $params);
+        return $stmt !== false;
+    }
+
+    /**
+     * Elimina un usuario
+     * @param int $id ID del usuario
+     * @return bool True si se eliminó correctamente
+     */
+    public function eliminar($id) {
+        $query = "DELETE FROM dbo.Usuarios WHERE ID_usuarios = ?";
+        $stmt = sqlsrv_query($this->conn, $query, array($id));
+        return $stmt !== false;
+    }
+
+    /**
+     * Crea un nuevo usuario (para uso del administrador)
+     * @param array $datos Datos del usuario
+     * @return bool True si se creó correctamente
+     */
+    public function crear($datos) {
+        $query = "INSERT INTO dbo.Usuarios (nombre, contrasenas, tiposusuariosid) VALUES (?, ?, ?)";
+        $params = array(
+            $datos['nombre'],
+            password_hash($datos['contrasena'], PASSWORD_DEFAULT),
+            $datos['tiposusuarioid']
+        );
+        
+        $stmt = sqlsrv_query($this->conn, $query, $params);
+        return $stmt !== false;
+    }
 }
 ?>

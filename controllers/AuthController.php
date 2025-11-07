@@ -100,8 +100,24 @@ class AuthController {
      * Cierra la sesión del usuario
      */
     public function logout() {
+        // Limpiar todas las variables de sesión
+        $_SESSION = array();
+        
+        // Destruir la cookie de sesión si existe
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time() - 3600, '/');
+        }
+        
+        // Destruir la sesión
         session_destroy();
-        header("Location: " . BASE_URL . "?page=login");
+        
+        // Prevenir caché del navegador
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        
+        // Redirigir a la página de inicio
+        header("Location: " . BASE_URL . "index.php");
         exit();
     }
 
@@ -110,6 +126,11 @@ class AuthController {
      * @return bool
      */
     public static function verificarAutenticacion() {
+        // Prevenir caché del navegador en páginas protegidas
+        header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+        header("Cache-Control: post-check=0, pre-check=0", false);
+        header("Pragma: no-cache");
+        
         if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
             header("Location: " . BASE_URL . "?page=login");
             exit();
@@ -123,6 +144,7 @@ class AuthController {
      */
     public static function verificarAdmin() {
         self::verificarAutenticacion();
+        
         if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] != 'Admi') {
             header("Location: " . BASE_URL . "?page=academicas");
             exit();

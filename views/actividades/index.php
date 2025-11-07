@@ -1,139 +1,293 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <title>Actividades Académicas</title>
-</head>
-<body>
+<?php
+$pageTitle = 'Mis Actividades Académicas';
 
-<!-- Botones actividades -->
-<div class="container mt-4">
-    <div class="mb-3">
-        <button type="button" class="btn btn-primary" id="btnTareas" data-id="1">Tareas</button>
-        <button type="button" class="btn btn-primary" id="btnProyectos" data-id="2">Proyectos</button>
-        <button type="button" class="btn btn-primary" id="btnExamenes" data-id="3">Exámenes</button>
-        <script>
-            function confirmLogout() {
-                var response = confirm("¿Estás seguro de que deseas cerrar sesión?");
-                if (response) {
-                    window.location.href = '<?= BASE_URL ?>?page=logout';
-                }
-            }
-        </script>
-        <a href="javascript:void(0);" onclick="confirmLogout()" class="btn btn-secondary">Cerrar Sesión</a>
+// Navegación
+ob_start();
+?>
+<ul class="navbar-nav ms-auto align-items-center">
+    <li class="nav-item">
+        <a class="nav-link active" href="<?= BASE_URL ?>?page=academicas">
+            <i class="bi bi-calendar-check"></i> Mis Actividades
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="btn btn-logout" href="<?= BASE_URL ?>?page=logout">
+            <i class="bi bi-box-arrow-right me-1"></i>
+            Cerrar Sesión
+        </a>
+    </li>
+</ul>
+<?php
+$navContent = ob_get_clean();
+
+// Contenido principal
+ob_start();
+?>
+
+<!-- Header de la página -->
+<div class="page-header animate-fade-in">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="bi bi-calendar-event"></i> Mis Actividades Académicas</h1>
+            <p class="mb-0">Gestiona tus tareas, proyectos y exámenes</p>
+        </div>
+        <div>
+            <button class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#modalActividad" type="button">
+                <i class="bi bi-plus-circle"></i> Nueva Actividad
+            </button>
+        </div>
     </div>
-
-<!-- Tabla de Actividades Académicas -->
-<div class="table-responsive">
-    <table class="table">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Para esta semana</th>
-                <th>Para la próxima semana</th>
-                <th>Para el próximo mes</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($resultados as $index => $resultado): ?>
-                <?php if (isset($resultado['actividades']) && count($resultado['actividades']) > 0): ?>
-                    <?php foreach ($resultado['actividades'] as $actividad): ?>
-                        <tr class="actividad-row" data-tipoactividad="<?= htmlspecialchars($tiposActividades[$actividad['tiposactividadesID']]) ?>">
-                            <td><?= count($resultado['actividades']) ?></td>
-                            <?php foreach (['Para esta semana', 'Para la próxima semana', 'Para el próximo mes'] as $periodo): ?>
-                                <td>
-                                    <?php if ($periodo === $index): ?>
-                                        <ul>
-                                            <li><strong>Materia:</strong> <?= htmlspecialchars($materias[$actividad['materiaID']]) ?></li>
-                                            <li><strong>Descripción:</strong> <?= htmlspecialchars($actividad['descripcion']) ?></li>
-                                            <li><strong>Fecha:</strong> <?= htmlspecialchars($actividad['fecha']->format('Y-m-d')) ?></li>
-                                            <li><strong>Tipo actividad:</strong> <?= htmlspecialchars($tiposActividades[$actividad['tiposactividadesID']]) ?></li>
-                                        </ul>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endforeach; ?>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-primary edit-button">...</button>
-                                <div class="action-buttons d-none">
-                                    <form action="<?= BASE_URL ?>?page=eliminar-actividad" method="POST" style="display:inline;">
-                                        <input type="hidden" name="id_actividad" value="<?= $actividad['ID_actividadesacademicas'] ?>">
-                                        <button type="submit" name="delete" class="btn btn-sm btn-danger" onclick="return confirm('¿Está seguro que desea eliminar esta actividad?');">Eliminar</button>
-                                    </form>
-                                    <form action="<?= BASE_URL ?>?page=editar-actividad" method="POST" style="display:inline;">
-                                        <input type="hidden" name="id_actividad" value="<?= $actividad['ID_actividadesacademicas'] ?>">
-                                        <button type="submit" name="update" class="btn btn-sm btn-success">Editar</button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
 </div>
 
-<!-- Modal para actividades -->
-<div class="modal fade" id="modalActividad" tabindex="-1" role="dialog" aria-labelledby="modalActividadLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+<!-- Filtros de actividades -->
+<div class="card animate-fade-in">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-auto">
+                <h5 class="mb-3"><i class="bi bi-funnel"></i> Filtrar por tipo:</h5>
+            </div>
+            <div class="col-md">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" id="btnTodas">
+                        <i class="bi bi-grid-3x3"></i> Todas
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnTareas" data-id="1">
+                        <i class="bi bi-list-check"></i> Tareas
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnProyectos" data-id="2">
+                        <i class="bi bi-folder"></i> Proyectos
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="btnExamenes" data-id="3">
+                        <i class="bi bi-pencil-square"></i> Exámenes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pestañas de períodos -->
+<ul class="nav nav-pills mb-4 animate-fade-in" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="semana-tab" data-bs-toggle="pill" data-bs-target="#semana" type="button" role="tab">
+            <i class="bi bi-calendar-week"></i> Esta Semana
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="proxima-tab" data-bs-toggle="pill" data-bs-target="#proxima" type="button" role="tab">
+            <i class="bi bi-calendar2-week"></i> Próxima Semana
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="mes-tab" data-bs-toggle="pill" data-bs-target="#mes" type="button" role="tab">
+            <i class="bi bi-calendar-month"></i> Próximo Mes
+        </button>
+    </li>
+</ul>
+
+<!-- Contenido de las pestañas -->
+<div class="tab-content">
+    <?php 
+    $periodos = [
+        'semana' => 'Para esta semana',
+        'proxima' => 'Para la próxima semana',
+        'mes' => 'Para el próximo mes'
+    ];
+    $isFirst = true;
+    foreach ($periodos as $key => $periodo): 
+    ?>
+    <div class="tab-pane fade <?= $isFirst ? 'show active' : '' ?>" id="<?= $key ?>" role="tabpanel">
+        <div class="row">
+            <?php 
+            $hasActivities = false;
+            foreach ($resultados as $index => $resultado): 
+                if ($index === $periodo && isset($resultado['actividades']) && count($resultado['actividades']) > 0):
+                    $hasActivities = true;
+                    foreach ($resultado['actividades'] as $actividad): 
+                        $tipoActividad = $tiposActividades[$actividad['tiposactividadesID']];
+                        $iconos = [
+                            'Tareas' => 'list-check',
+                            'Proyectos' => 'folder',
+                            'Exámenes' => 'pencil-square'
+                        ];
+                        $colores = [
+                            'Tareas' => 'primary',
+                            'Proyectos' => 'success',
+                            'Exámenes' => 'danger'
+                        ];
+                        $icono = $iconos[$tipoActividad] ?? 'file-text';
+                        $color = $colores[$tipoActividad] ?? 'secondary';
+            ?>
+            <div class="col-md-6 col-lg-4 mb-4 actividad-card" data-tipoactividad="<?= htmlspecialchars($tipoActividad) ?>">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge bg-<?= $color ?> rounded-pill">
+                                <i class="bi bi-<?= $icono ?>"></i> <?= htmlspecialchars($tipoActividad) ?>
+                            </span>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li>
+                                        <form action="<?= BASE_URL ?>?page=editar-actividad" method="POST" class="d-inline">
+                                            <input type="hidden" name="id_actividad" value="<?= $actividad['ID_actividadesacademicas'] ?>">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="bi bi-pencil"></i> Editar
+                                            </button>
+                                        </form>
+                                    </li>
+                                    <li>
+                                        <form action="<?= BASE_URL ?>?page=eliminar-actividad" method="POST" class="d-inline" onsubmit="return confirm('¿Está seguro que desea eliminar esta actividad?');">
+                                            <input type="hidden" name="id_actividad" value="<?= $actividad['ID_actividadesacademicas'] ?>">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="bi bi-trash"></i> Eliminar
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <h5 class="card-title"><?= htmlspecialchars($materias[$actividad['materiaID']]) ?></h5>
+                        <p class="card-text"><?= htmlspecialchars($actividad['descripcion']) ?></p>
+                        
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="bi bi-calendar3 me-2"></i>
+                            <small><?= htmlspecialchars($actividad['fecha']->format('d/m/Y')) ?></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php 
+                    endforeach;
+                endif;
+            endforeach;
+            
+            if (!$hasActivities): 
+            ?>
+            <div class="col-12">
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle fs-1 d-block mb-2"></i>
+                    <h5>No hay actividades para este período</h5>
+                    <p class="mb-0">Haz clic en los botones de arriba para agregar nuevas actividades</p>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
+    </div>
+    <?php 
+        $isFirst = false;
+    endforeach; 
+    ?>
+</div>
+
+<!-- Modal para nueva actividad -->
+<div class="modal fade" id="modalActividad" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalActividadLabel">Nueva Actividad</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title" id="modalActividadLabel">
+                    <i class="bi bi-plus-circle"></i> Nueva Actividad
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="formModalActividad">
-                    <input type="hidden" id="tiposactividadesIDInput" name="tiposactividadesID">
-                    <div class="form-group">
-                        <label for="materiaIDInput">Materia</label>
-                        <select class="form-control" id="materiaIDInput" name="materiaID" required>
+                    <!-- Selector de tipo de actividad -->
+                    <div class="mb-3">
+                        <label for="tiposactividadesIDInput" class="form-label">
+                            <i class="bi bi-tag"></i> Tipo de Actividad
+                        </label>
+                        <select class="form-select" id="tiposactividadesIDInput" name="tiposactividadesID" required>
+                            <option value="">Seleccione un tipo...</option>
+                            <option value="1">📝 Tarea</option>
+                            <option value="2">📁 Proyecto</option>
+                            <option value="3">📋 Examen</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="materiaIDInput" class="form-label">
+                            <i class="bi bi-book"></i> Materia
+                        </label>
+                        <select class="form-select" id="materiaIDInput" name="materiaID" required>
                             <?php
-                                if (!empty($carrera_materias)) {
-                                    foreach ($carrera_materias as $idMateria => $nombreMateria) {
-                                        echo "<option value='$idMateria'>$nombreMateria</option>";
-                                    }
-                                } else {
-                                    echo "<option>No hay materias disponibles para tu carrera</option>";
+                            if (!empty($carrera_materias)) {
+                                foreach ($carrera_materias as $idMateria => $nombreMateria) {
+                                    echo "<option value='$idMateria'>$nombreMateria</option>";
                                 }
+                            } else {
+                                echo "<option value=''>No hay materias disponibles</option>";
+                            }
                             ?>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label for="descripcionInput">Descripción</label>
-                        <input type="text" class="form-control" id="descripcionInput" name="descripcion" required>
+                    
+                    <div class="mb-3">
+                        <label for="descripcionInput" class="form-label">
+                            <i class="bi bi-text-paragraph"></i> Descripción
+                        </label>
+                        <textarea class="form-control" id="descripcionInput" name="descripcion" rows="3" required></textarea>
                     </div>
-                    <div class="form-group">
-                        <label for="fechaInput">Fecha</label>
+                    
+                    <div class="mb-4">
+                        <label for="fechaInput" class="form-label">
+                            <i class="bi bi-calendar3"></i> Fecha de Entrega
+                        </label>
                         <input type="date" class="form-control" id="fechaInput" name="fecha" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Guardar</button>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Guardar Actividad
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-$(document).ready(function() {
-    $('.edit-button').click(function() {
-        $(this).closest('tr').find('input, select').removeAttr('disabled');
-        $(this).hide();
-        $(this).closest('tr').find('.action-buttons').removeClass('d-none');
-    });
+<?php
+$baseUrl = BASE_URL;
+$userIdJson = json_encode($userId);
 
-    function abrirModalParaNuevaActividad(tipoActividadTexto, idTipoActividad) {
-        $('#modalActividadLabel').text(`Nueva ${tipoActividadTexto}`);
-        $('#tiposactividadesIDInput').val(idTipoActividad);
-        $('#modalActividad').modal('show');
-    }
+$additionalJS = <<<JAVASCRIPT
+<script>
+var userId = {$userIdJson};
+
+\$(document).ready(function() {
+    console.log('Document ready - jQuery loaded');
+    console.log('userId:', userId);
+    
+    var today = new Date().toISOString().split('T')[0];
+    \$('#fechaInput').attr('min', today);
+    
+    \$('#modalActividad').on('show.bs.modal', function() {
+        \$('#formModalActividad')[0].reset();
+        \$('#modalActividadLabel').html('<i class="bi bi-plus-circle"></i> Nueva Actividad');
+    });
+    
+    \$('#tiposactividadesIDInput').change(function() {
+        var tipoId = \$(this).val();
+        var tipos = {
+            '1': { nombre: 'Tarea', icono: 'list-check' },
+            '2': { nombre: 'Proyecto', icono: 'folder' },
+            '3': { nombre: 'Examen', icono: 'pencil-square' }
+        };
+        
+        if (tipoId && tipos[tipoId]) {
+            \$('#modalActividadLabel').html('<i class="bi bi-' + tipos[tipoId].icono + '"></i> Nueva ' + tipos[tipoId].nombre);
+        } else {
+            \$('#modalActividadLabel').html('<i class="bi bi-plus-circle"></i> Nueva Actividad');
+        }
+    });
 
     function filterTableByTipoActividad(tipoActividad) {
         var tipoActividadNombre = {
@@ -144,42 +298,69 @@ $(document).ready(function() {
 
         var tipoActividadSeleccionada = tipoActividadNombre[tipoActividad];
 
-        $('.actividad-row').each(function() {
-            var filaTipoActividad = $(this).data('tipoactividad');
+        if (!tipoActividad) {
+            \$('.actividad-card').fadeIn();
+            \$('.btn-group .btn').removeClass('active');
+            \$('#btnTodas').addClass('active');
+            return;
+        }
+
+        \$('.btn-group .btn').removeClass('active');
+        \$('[data-id="' + tipoActividad + '"]').addClass('active');
+
+        \$('.actividad-card').each(function() {
+            var filaTipoActividad = \$(this).data('tipoactividad');
             if (filaTipoActividad === tipoActividadSeleccionada) {
-                $(this).show();
+                \$(this).fadeIn();
             } else {
-                $(this).hide();
+                \$(this).fadeOut();
             }
         });
     }
 
-    $('#btnTareas').click(function() {
+    \$('#btnTodas').click(function() {
+        filterTableByTipoActividad(null);
+    });
+
+    \$('#btnTareas').click(function() {
         filterTableByTipoActividad(1);
-        abrirModalParaNuevaActividad('Tarea', 1);
     });
     
-    $('#btnProyectos').click(function() {
+    \$('#btnProyectos').click(function() {
         filterTableByTipoActividad(2);
-        abrirModalParaNuevaActividad('Proyecto', 2);
     });
     
-    $('#btnExamenes').click(function() {
+    \$('#btnExamenes').click(function() {
         filterTableByTipoActividad(3);
-        abrirModalParaNuevaActividad('Examen', 3);
     });
 
-    $('#formModalActividad').submit(function (event) {
+    \$('#formModalActividad').on('submit', function (event) {
         event.preventDefault();
+        event.stopPropagation();
+        
+        console.log('Form submit intercepted');
 
-        var tipoActividad = $('#tiposactividadesIDInput').val();
-        var materiaID = $('#materiaIDInput').val();
-        var descripcion = $('#descripcionInput').val();
-        var fecha = $('#fechaInput').val();
+        var tipoActividad = \$('#tiposactividadesIDInput').val();
+        var materiaID = \$('#materiaIDInput').val();
+        var descripcion = \$('#descripcionInput').val();
+        var fecha = \$('#fechaInput').val();
+        
+        console.log('Tipo:', tipoActividad, 'Materia:', materiaID);
 
-        $.ajax({
+        if (!tipoActividad) {
+            alert("Por favor selecciona el tipo de actividad");
+            \$('#tiposactividadesIDInput').focus();
+            return false;
+        }
+
+        if (!materiaID) {
+            alert("No hay materias disponibles para tu carrera");
+            return false;
+        }
+
+        \$.ajax({
             type: 'POST',
-            url: '<?= BASE_URL ?>?page=academicas',
+            url: '{$baseUrl}?page=academicas',
             data: {
                 materiaID: materiaID,
                 tiposactividadesID: tipoActividad,
@@ -189,18 +370,31 @@ $(document).ready(function() {
                 fecha: fecha
             },
             success: function (response) {
-                $('#modalActividad').modal('hide');
-                alert("Actividad guardada exitosamente");
-                location.reload(true);
+                \$('#modalActividad').modal('hide');
+                
+                var alert = \$('<div class="alert alert-success alert-dismissible fade show" role="alert">' +
+                    '<i class="bi bi-check-circle me-2"></i>Actividad guardada exitosamente' +
+                    '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>' +
+                    '</div>');
+                
+                \$('.main-content .container').prepend(alert);
+                
+                setTimeout(function() {
+                    location.reload(true);
+                }, 1500);
             },
             error: function (error) {
                 console.error(error);
                 alert("Hubo un error al guardar la actividad");
             }
         });
+        
+        return false;
     });
 });
 </script>
+JAVASCRIPT;
 
-</body>
-</html>
+$content = ob_get_clean();
+require_once VIEWS_PATH . 'layouts/dashboard.php';
+?>

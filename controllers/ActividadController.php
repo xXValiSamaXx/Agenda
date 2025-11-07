@@ -42,9 +42,6 @@ class ActividadController {
 
         // Obtener actividades agrupadas por periodos
         $resultados = $this->actividadModel->obtenerPorPeriodos($userId);
-        
-        // Hacer disponible el userId para JavaScript
-        echo "<script>var userId = " . json_encode($userId) . ";</script>";
 
         require_once VIEWS_PATH . 'actividades/index.php';
     }

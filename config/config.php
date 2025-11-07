@@ -13,6 +13,13 @@ ini_set('display_errors', 1);
 // Configuración de sesión
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
+ini_set('session.cookie_secure', 0); // Cambiar a 1 si se usa HTTPS
+ini_set('session.use_strict_mode', 1);
+ini_set('session.cookie_samesite', 'Lax');
+
+// Configuración adicional de sesión para prevenir ataques
+ini_set('session.gc_maxlifetime', 1800); // 30 minutos
+ini_set('session.cookie_lifetime', 0); // Hasta que se cierre el navegador
 
 // Rutas de la aplicación
 define('BASE_PATH', dirname(__DIR__));

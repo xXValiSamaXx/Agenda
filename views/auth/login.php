@@ -1,62 +1,73 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Mi Agenda</title>
-    <link href="<?= BASE_URL ?>Estilo2.css" rel="stylesheet">
-    <script>
-        // Script de diagnóstico
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.querySelector('form');
-            const submitBtn = document.querySelector('input[type="submit"]');
-            
-            console.log('Formulario encontrado:', form);
-            console.log('Botón submit encontrado:', submitBtn);
-            console.log('Action del formulario:', form ? form.action : 'No encontrado');
-            console.log('Method del formulario:', form ? form.method : 'No encontrado');
-            
-            if (form) {
-                form.addEventListener('submit', function(e) {
-                    console.log('Formulario enviándose...');
-                    console.log('Usuario:', document.querySelector('input[name="nombre"]').value);
-                    console.log('Contraseña presente:', document.querySelector('input[name="contrasenas"]').value ? 'Sí' : 'No');
-                    
-                    // NO prevenir el envío, solo loguear
-                    // e.preventDefault();
-                });
-            }
-            
-            if (submitBtn) {
-                submitBtn.addEventListener('click', function(e) {
-                    console.log('Click en botón submit detectado');
-                });
-            }
-        });
-    </script>
-</head>
-<body>
-    <form action="<?= BASE_URL ?>?page=login" method="post" id="loginForm">
-        <h2>Iniciar sesión</h2>
+<?php
+$pageTitle = 'Iniciar Sesión - Mi Agenda';
+ob_start();
+?>
 
+<div class="auth-container">
+    <div class="auth-header">
+        <i class="bi bi-person-circle" style="font-size: 48px;"></i>
+        <h2>Bienvenido</h2>
+        <p>Inicia sesión para gestionar tus actividades</p>
+    </div>
+    
+    <div class="auth-body">
         <?php if (!empty($mensajeError)): ?>
-            <div class='alert alert-danger' style='background: #f8d7da; padding: 10px; margin-bottom: 15px; border-radius: 5px; color: #721c24;'>
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
                 <?= $mensajeError ?>
             </div>
         <?php endif; ?>
-
-        <label for="nombre"><p>Usuario:</p></label>
-        <input type="text" name="nombre" id="nombre" required>           
-       
-        <label for="contrasenas"><p>Contraseña:</p></label>
-        <input type="password" name="contrasenas" id="contrasenas" required>
         
-        <input type="submit" value="Iniciar sesión" class="btn btn-1">
-     
-        <div class="text-center">
-            <label for="registrarse"><p>No tienes cuenta?</p></label>
-            <a href="<?= BASE_URL ?>?page=registrarse" class="btn btn-link">Registrate</a>
+        <form action="<?= BASE_URL ?>?page=login" method="post" id="loginForm">
+            <div class="mb-3">
+                <label for="nombre" class="form-label">
+                    <i class="bi bi-person"></i> Usuario
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
+                    <input type="text" class="form-control" name="nombre" id="nombre" placeholder="Ingresa tu usuario" required>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="contrasenas" class="form-label">
+                    <i class="bi bi-lock"></i> Contraseña
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-lock-fill"></i>
+                    </span>
+                    <input type="password" class="form-control" name="contrasenas" id="contrasenas" placeholder="Ingresa tu contraseña" required>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100 mb-3">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                Iniciar Sesión
+            </button>
+        </form>
+        
+        <div class="divider">
+            <span>o</span>
         </div>
-    </form>
-</body>
-</html>
+        
+        <a href="<?= BASE_URL ?>?page=registrarse" class="btn btn-outline-primary w-100">
+            <i class="bi bi-person-plus me-2"></i>
+            Crear Nueva Cuenta
+        </a>
+    </div>
+    
+    <div class="auth-footer">
+        <a href="<?= BASE_URL ?>?page=home">
+            <i class="bi bi-house-door me-1"></i>
+            Volver a la página principal
+        </a>
+    </div>
+</div>
+
+<?php
+$content = ob_get_clean();
+require_once VIEWS_PATH . 'layouts/auth.php';
+?>
