@@ -79,8 +79,9 @@ class ActividadController {
             $actividad = $this->actividadModel->obtenerPorId($id);
             
             if ($actividad) {
-                $materias = $this->materiaModel->obtenerTodas();
-                $tiposActividades = $this->tipoActividadModel->obtenerTodos();
+                // Obtener listados indexados por ID para que las vistas reciban "id => nombre"
+                $materias = $this->materiaModel->obtenerIndexadasPorId();
+                $tiposActividades = $this->tipoActividadModel->obtenerIndexadosPorId();
                 require_once VIEWS_PATH . 'actividades/editar.php';
                 return;
             }
