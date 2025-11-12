@@ -46,7 +46,7 @@ define('FULL_URL', $protocol . $host . $baseDir);
  */
 define('MAIL_HOST', getenv('MAIL_HOST') ?: 'smtp.gmail.com');
 define('MAIL_USERNAME', getenv('MAIL_USERNAME') ?: 'preticor.help@gmail.com');
-define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: 'v7c1Mj*X6'); // PONER LA CONTRASEÑA DE APLICACIÓN AQUI (sin espacios)
+define('MAIL_PASSWORD', getenv('MAIL_PASSWORD') ?: 'jjomhlreemtmtptx'); // PONER LA CONTRASEÑA DE APLICACIÓN AQUI (sin espacios)
 define('MAIL_SMTP_SECURE', getenv('MAIL_SMTP_SECURE') ?: 'tls');
 define('MAIL_PORT', getenv('MAIL_PORT') ?: 587);
 define('MAIL_FROM', getenv('MAIL_FROM') ?: MAIL_USERNAME);
