@@ -64,7 +64,7 @@ class Usuario {
     }
 
     /**
-     * Verifica si un email ya existe
+     * Verifica si un email ya existe en InformacionPersonal
      * @param string $email Email
      * @return bool True si existe, false si no
      */
@@ -73,7 +73,8 @@ class Usuario {
             return false;
         }
         
-        $query = "SELECT COUNT(*) as total FROM dbo.Usuarios WHERE email = ?";
+        // Buscar en la tabla InformacionPersonal en lugar de Usuarios
+        $query = "SELECT COUNT(*) as total FROM dbo.InformacionPersonal WHERE email = ?";
         $stmt = sqlsrv_query($this->conn, $query, array($email));
         
         if ($stmt === false) {
@@ -90,10 +91,9 @@ class Usuario {
      * @return bool True si se registró correctamente
      */
     public function registrar($datosUsuario) {
-        $query = "INSERT INTO dbo.Usuarios (nombre, email, contrasenas, tiposusuariosid) VALUES (?, ?, ?, ?)";
+        $query = "INSERT INTO dbo.Usuarios (nombre, contrasenas, tiposusuariosid) VALUES (?, ?, ?)";
         $params = array(
             $datosUsuario['nombre'],
-            $datosUsuario['email'],
             $datosUsuario['contrasena'],
             $datosUsuario['tiposusuarioid']
         );
@@ -108,7 +108,11 @@ class Usuario {
      * @return array|false Datos del usuario
      */
     public function obtenerPorId($userId) {
-        $query = "SELECT * FROM dbo.Usuarios WHERE ID_usuarios = ?";
+        $query = "SELECT u.*, t.tipo as tipo_usuario, ip.email 
+                  FROM dbo.Usuarios u 
+                  INNER JOIN dbo.Tiposusuarios t ON u.tiposusuariosid = t.ID_tiposusuarios 
+                  LEFT JOIN dbo.InformacionPersonal ip ON u.ID_usuarios = ip.usuariosid
+                  WHERE u.ID_usuarios = ?";
         $stmt = sqlsrv_query($this->conn, $query, array($userId));
         
         if ($stmt !== false) {
@@ -122,9 +126,10 @@ class Usuario {
      * @return array Lista de usuarios
      */
     public function obtenerTodos() {
-        $query = "SELECT u.*, t.tipo as tipo_usuario 
+        $query = "SELECT u.*, t.tipo as tipo_usuario, ip.email 
                   FROM dbo.Usuarios u 
                   INNER JOIN dbo.Tiposusuarios t ON u.tiposusuariosid = t.ID_tiposusuarios 
+                  LEFT JOIN dbo.InformacionPersonal ip ON u.ID_usuarios = ip.usuariosid
                   ORDER BY u.nombre";
         $stmt = sqlsrv_query($this->conn, $query);
         
@@ -163,28 +168,46 @@ class Usuario {
     public function actualizar($id, $datos) {
         $email = isset($datos['email']) ? $datos['email'] : null;
         
+        // 1. Actualizar datos del usuario (sin email)
         if (!empty($datos['contrasena'])) {
             // Si se proporciona nueva contraseña
-            $query = "UPDATE dbo.Usuarios SET nombre = ?, email = ?, contrasenas = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
+            $query = "UPDATE dbo.Usuarios SET nombre = ?, contrasenas = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
             $params = array(
                 $datos['nombre'],
-                $email,
                 password_hash($datos['contrasena'], PASSWORD_DEFAULT),
                 $datos['tiposusuarioid'],
                 $id
             );
         } else {
             // Sin cambiar contraseña
-            $query = "UPDATE dbo.Usuarios SET nombre = ?, email = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
+            $query = "UPDATE dbo.Usuarios SET nombre = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
             $params = array(
                 $datos['nombre'],
-                $email,
                 $datos['tiposusuarioid'],
                 $id
             );
         }
         
         $stmt = sqlsrv_query($this->conn, $query, $params);
+        
+        // 2. Actualizar o insertar email en InformacionPersonal
+        if ($stmt !== false && !empty($email)) {
+            // Verificar si ya existe registro en InformacionPersonal
+            $queryCheck = "SELECT COUNT(*) as total FROM dbo.InformacionPersonal WHERE usuariosid = ?";
+            $stmtCheck = sqlsrv_query($this->conn, $queryCheck, array($id));
+            $rowCheck = sqlsrv_fetch_array($stmtCheck, SQLSRV_FETCH_ASSOC);
+            
+            if ($rowCheck && $rowCheck['total'] > 0) {
+                // UPDATE
+                $queryEmail = "UPDATE dbo.InformacionPersonal SET email = ? WHERE usuariosid = ?";
+                sqlsrv_query($this->conn, $queryEmail, array($email, $id));
+            } else {
+                // INSERT
+                $queryEmail = "INSERT INTO dbo.InformacionPersonal (usuariosid, email) VALUES (?, ?)";
+                sqlsrv_query($this->conn, $queryEmail, array($id, $email));
+            }
+        }
+        
         return $stmt !== false;
     }
 
@@ -207,15 +230,30 @@ class Usuario {
     public function crear($datos) {
         $email = isset($datos['email']) ? $datos['email'] : null;
         
-        $query = "INSERT INTO dbo.Usuarios (nombre, email, contrasenas, tiposusuariosid) VALUES (?, ?, ?, ?)";
+        // 1. Insertar usuario (sin email)
+        $query = "INSERT INTO dbo.Usuarios (nombre, contrasenas, tiposusuariosid) VALUES (?, ?, ?)";
         $params = array(
             $datos['nombre'],
-            $email,
             password_hash($datos['contrasena'], PASSWORD_DEFAULT),
             $datos['tiposusuarioid']
         );
         
         $stmt = sqlsrv_query($this->conn, $query, $params);
+        
+        if ($stmt !== false && !empty($email)) {
+            // 2. Obtener el ID del usuario recién creado
+            $queryId = "SELECT TOP 1 ID_usuarios FROM dbo.Usuarios WHERE nombre = ? ORDER BY ID_usuarios DESC";
+            $stmtId = sqlsrv_query($this->conn, $queryId, array($datos['nombre']));
+            
+            if ($stmtId && $row = sqlsrv_fetch_array($stmtId, SQLSRV_FETCH_ASSOC)) {
+                $usuarioId = $row['ID_usuarios'];
+                
+                // 3. Insertar email en InformacionPersonal
+                $queryInfo = "INSERT INTO dbo.InformacionPersonal (usuariosid, email) VALUES (?, ?)";
+                sqlsrv_query($this->conn, $queryInfo, array($usuarioId, $email));
+            }
+        }
+        
         return $stmt !== false;
     }
 }

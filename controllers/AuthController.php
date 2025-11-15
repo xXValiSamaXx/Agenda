@@ -60,15 +60,148 @@ class AuthController {
     }
 
     /**
-     * Muestra la página de registro
+     * Muestra la página de registro (redirige al paso 1)
      */
     public function mostrarRegistro() {
-        $mensajeError = "";
-        require_once VIEWS_PATH . 'auth/registrarse.php';
+        header("Location: " . BASE_URL . "?page=registrarse");
+        exit();
     }
 
     /**
-     * Procesa el registro de un nuevo usuario
+     * Procesa el registro de un nuevo usuario (PASO 1: Datos Personales)
+     */
+    public function registrarPaso1() {
+        $mensajeError = "";
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $nombres = isset($_POST['nombres']) ? htmlspecialchars($_POST['nombres']) : '';
+            $primerapellido = isset($_POST['primerapellido']) ? htmlspecialchars($_POST['primerapellido']) : '';
+            $segundoapellido = isset($_POST['segundoapellido']) ? htmlspecialchars($_POST['segundoapellido']) : '';
+            $fecha_nacimiento = isset($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : '';
+
+            // Validaciones
+            if (empty($nombres) || empty($primerapellido) || empty($fecha_nacimiento)) {
+                $mensajeError = "Por favor, complete todos los campos obligatorios.";
+            } else {
+                // Validar edad (mínimo 18 años)
+                $fechaNacimiento = new DateTime($fecha_nacimiento);
+                $fechaActual = new DateTime();
+                $edad = $fechaActual->diff($fechaNacimiento)->y;
+                
+                if ($edad < 18) {
+                    $mensajeError = "Debes tener al menos 18 años para registrarte.";
+                } else {
+                    // Guardar en sesión y avanzar al paso 2
+                    $_SESSION['registro_paso1'] = [
+                        'nombres' => $nombres,
+                        'primerapellido' => $primerapellido,
+                        'segundoapellido' => $segundoapellido,
+                        'fecha_nacimiento' => $fecha_nacimiento
+                    ];
+
+                    header("Location: " . BASE_URL . "?page=registro-paso2");
+                    exit();
+                }
+            }
+        }
+
+        require_once VIEWS_PATH . 'auth/registro_paso1.php';
+    }
+
+    /**
+     * PASO 2: Información de Contacto
+     */
+    public function registrarPaso2() {
+        // Verificar que haya completado el paso 1
+        if (!isset($_SESSION['registro_paso1'])) {
+            header("Location: " . BASE_URL . "?page=registrarse");
+            exit();
+        }
+
+        $mensajeError = "";
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $telefono = isset($_POST['telefono']) ? $_POST['telefono'] : '';
+            $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '';
+            $RFC = isset($_POST['RFC']) ? htmlspecialchars($_POST['RFC']) : null;
+
+            // Validaciones
+            if (empty($telefono) || empty($email)) {
+                $mensajeError = "Por favor, complete todos los campos obligatorios.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $mensajeError = "Por favor, ingrese un correo electrónico válido.";
+            } elseif (!preg_match('/^[0-9]{10}$/', $telefono)) {
+                $mensajeError = "El teléfono debe contener exactamente 10 dígitos.";
+            }
+            // Verificar si el email ya existe
+            elseif ($this->usuarioModel->existeEmail($email)) {
+                $mensajeError = "El correo electrónico ya está registrado.";
+            }
+            else {
+                // Guardar en sesión y avanzar al paso 3
+                $_SESSION['registro_paso2'] = [
+                    'telefono' => $telefono,
+                    'email' => $email,
+                    'RFC' => $RFC
+                ];
+
+                header("Location: " . BASE_URL . "?page=registro-paso3");
+                exit();
+            }
+        }
+
+        require_once VIEWS_PATH . 'auth/registro_paso2.php';
+    }
+
+    /**
+     * PASO 3: Credenciales de Cuenta
+     */
+    public function registrarPaso3() {
+        // Verificar que haya completado los pasos anteriores
+        if (!isset($_SESSION['registro_paso1']) || !isset($_SESSION['registro_paso2'])) {
+            header("Location: " . BASE_URL . "?page=registrarse");
+            exit();
+        }
+
+        $mensajeError = "";
+
+        if ($_SERVER["REQUEST_METHOD"] == "POST") {
+            $nombre = isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : '';
+            $contrasena = isset($_POST['contrasena']) ? $_POST['contrasena'] : '';
+            $confirmar_contrasena = isset($_POST['confirmar_contrasena']) ? $_POST['confirmar_contrasena'] : '';
+
+            // Validaciones
+            if (empty($nombre) || empty($contrasena) || empty($confirmar_contrasena)) {
+                $mensajeError = "Por favor, complete todos los campos.";
+            } elseif (strlen($nombre) < 3) {
+                $mensajeError = "El nombre de usuario debe tener al menos 3 caracteres.";
+            } elseif (strlen($contrasena) < 6) {
+                $mensajeError = "La contraseña debe tener al menos 6 caracteres.";
+            } elseif ($contrasena !== $confirmar_contrasena) {
+                $mensajeError = "Las contraseñas no coinciden.";
+            } else {
+                // Verificar si el usuario ya existe
+                if ($this->usuarioModel->existeUsuario($nombre)) {
+                    $mensajeError = "El nombre de usuario ya existe.";
+                } else {
+                    // Todo OK - Registrar usuario y redirigir a RegistroController
+                    $_SESSION['registro_usuario'] = [
+                        'nombre' => $nombre,
+                        'contrasena' => password_hash($contrasena, PASSWORD_DEFAULT),
+                        'tiposusuarioid' => 1 // Por defecto Alumno
+                    ];
+
+                    header("Location: " . BASE_URL . "?page=completar-registro");
+                    exit();
+                }
+            }
+        }
+
+        require_once VIEWS_PATH . 'auth/registro_paso3.php';
+    }
+
+    /**
+     * Procesa el registro de un nuevo usuario (MÉTODO ANTIGUO - DEPRECATED)
      */
     public function registrar() {
         $mensajeError = "";

@@ -26,7 +26,27 @@ switch ($page) {
 
     case 'registrarse':
         $controller = new AuthController();
-        $controller->registrar();
+        $controller->registrarPaso1();
+        break;
+
+    case 'registro-paso1':
+        $controller = new AuthController();
+        $controller->registrarPaso1();
+        break;
+
+    case 'registro-paso2':
+        $controller = new AuthController();
+        $controller->registrarPaso2();
+        break;
+
+    case 'registro-paso3':
+        $controller = new AuthController();
+        $controller->registrarPaso3();
+        break;
+
+    case 'completar-registro':
+        $controller = new RegistroController();
+        $controller->completarRegistro();
         break;
 
     case 'logout':
@@ -109,6 +129,32 @@ switch ($page) {
     case 'resetear-password':
         $controller = new AdminController();
         $controller->resetearPassword();
+        break;
+
+    // Rutas de proceso de registro completo
+    case 'informacion-personal':
+        $controller = new RegistroController();
+        $controller->informacionPersonal();
+        break;
+
+    case 'guardar-informacion-personal':
+        $controller = new RegistroController();
+        $controller->guardarInformacionPersonal();
+        break;
+
+    case 'confirmar-informacion':
+        $controller = new RegistroController();
+        $controller->confirmarInformacion();
+        break;
+
+    case 'informacion-academica':
+        $controller = new RegistroController();
+        $controller->informacionAcademica();
+        break;
+
+    case 'guardar-informacion-academica':
+        $controller = new RegistroController();
+        $controller->guardarInformacionAcademica();
         break;
 
     // Ruta por defecto

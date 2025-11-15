@@ -1,58 +1,13 @@
 <?php
-session_start();  // Inicia la sesión
+// Este archivo es incluido por RegistroController
+// No debe procesar el formulario directamente, solo mostrarlo
 
-include 'Conexion.php';
-
-$mensajeError = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Recoger los datos del formulario
-    $nombres = isset($_POST['nombres']) ? htmlspecialchars($_POST['nombres']) : '';
-    $primerapellido = isset($_POST['primerapellido']) ? htmlspecialchars($_POST['primerapellido']) : '';
-    $segundoapellido = isset($_POST['segundoapellido']) ? htmlspecialchars($_POST['segundoapellido']) : '';
-    $fecha_nacimiento = isset($_POST['fecha_nacimiento']) ? $_POST['fecha_nacimiento'] : '';
-    $telefono = isset($_POST['telefono']) ? $_POST['telefono'] : '';
-    $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '';
-    $RFC = isset($_POST['RFC']) ? $_POST['RFC'] : null;
-
-    // Validar la edad
-    if (!empty($fecha_nacimiento)) {
-        $fechaNacimiento = new DateTime($fecha_nacimiento);
-        $fechaActual = new DateTime();
-        $edad = $fechaActual->diff($fechaNacimiento)->y;
-        
-        if ($edad < 18) {
-            $mensajeError = "Debes tener al menos 18 años para registrarte.";
-        }
-    } else {
-        $mensajeError = "Por favor, ingrese su fecha de nacimiento.";
-    }
-
-    // Validar otros campos si la edad es adecuada
-    if (empty($mensajeError)) {
-        if (empty($nombres) || empty($primerapellido) || empty($telefono) || empty($email)) {
-            $mensajeError = "Por favor, complete todos los campos obligatorios.";
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $mensajeError = "Ingrese una dirección de correo electrónico válida.";
-        } 
-    }
-
-    // Almacenar datos en la sesión si no hay errores
-    if (empty($mensajeError)) {
-        $_SESSION['informacion_personal'] = [
-            'nombres' => $nombres,
-            'primerapellido' => $primerapellido,
-            'segundoapellido' => $segundoapellido,
-            'fecha_nacimiento' => $fecha_nacimiento,
-            'telefono' => $telefono,
-            'email' => $email,
-            'RFC' => $RFC
-        ];
-
-        header("Location: Informacioncontacto.php");
-        exit();
-    }
+if (!isset($_SESSION['registro_usuario'])) {
+    header("Location: " . BASE_URL . "?page=registrarse");
+    exit();
 }
+
+$mensajeError = $mensajeError ?? "";
 ?>
 
 <!DOCTYPE html>
@@ -61,25 +16,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Información Personal</title>
-    <link href="Estilo2.css" rel="stylesheet"/>
+    <link href="<?= BASE_URL ?>/Estilo2.css" rel="stylesheet"/>
     <script>
         window.addEventListener('popstate', function (event) {
             if (event.state && event.state.isBackNavigation) {
                 if (confirm("Si regresa, se perderán todos los cambios.")) {
-                    history.back();  // Navegar hacia atrás si el usuario confirma
+                    history.back();
                 } else {
-                    history.pushState({isBackNavigation: true}, "");  // Mantenerse en la misma página si el usuario cancela
+                    history.pushState({isBackNavigation: true}, "");
                 }
             }
         });
 
-        history.pushState({isBackNavigation: true}, "");  // Agregar el estado actual al historial
+        history.pushState({isBackNavigation: true}, "");
     </script>
 </head>
 
 <body>
 <div class="container" style="display: flex; align-items: center; justify-content: center; height:100vh; transform: scale(0.9);">
-    <form action="Informacionpersonal.php" method="post" style="display: flex; flex-direction: column; width: 400px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); border-radius: 15px; background-color: #EEEEEE; padding: 35px;">
+    <form action="<?= BASE_URL ?>?page=guardar-informacion-personal" method="post" style="display: flex; flex-direction: column; width: 400px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.2); border-radius: 15px; background-color: #EEEEEE; padding: 35px;">
         <h2>Información Personal</h2>
         <?php
         if ($mensajeError != "") {
