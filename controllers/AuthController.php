@@ -42,6 +42,20 @@ class AuthController {
                     $_SESSION['user_type_id'] = $usuario['tiposusuariosid'];
                     $_SESSION['user_name'] = $usuario['nombre'];
 
+                    // Verificar si el perfil está completo (excepto para Alumnos que ya completan todo en registro)
+                    if ($usuario['tiposusuariosid'] != 1) { // No es Alumno
+                        $perfilController = new PerfilController();
+                        $perfil = $perfilController->verificarPerfilCompleto($usuario['ID_usuarios']);
+                        
+                        if (!$perfil['personal']) {
+                            header("Location: " . BASE_URL . "?page=completar-perfil-personal");
+                            exit();
+                        } elseif (!$perfil['contacto']) {
+                            header("Location: " . BASE_URL . "?page=completar-perfil-contacto");
+                            exit();
+                        }
+                    }
+
                     // Aceptar tanto 'Admin' como 'Admi' (por compatibilidad)
                     if (strcasecmp($tipo, 'Admin') === 0 || strcasecmp($tipo, 'Admi') === 0) {
                         header("Location: " . BASE_URL . "?page=admin");

@@ -157,6 +157,27 @@ switch ($page) {
         $controller->guardarInformacionAcademica();
         break;
 
+    // Rutas de completar perfil
+    case 'completar-perfil-personal':
+        $controller = new PerfilController();
+        $controller->completarPersonal();
+        break;
+
+    case 'guardar-perfil-personal':
+        $controller = new PerfilController();
+        $controller->guardarPersonal();
+        break;
+
+    case 'completar-perfil-contacto':
+        $controller = new PerfilController();
+        $controller->completarContacto();
+        break;
+
+    case 'guardar-perfil-contacto':
+        $controller = new PerfilController();
+        $controller->guardarContacto();
+        break;
+
     // Ruta por defecto
     default:
         $controller = new HomeController();
