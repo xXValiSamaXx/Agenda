@@ -52,9 +52,36 @@ class Usuario {
      * @return bool True si existe, false si no
      */
     public function existeUsuario($nombre) {
-        $query = "SELECT * FROM dbo.Usuarios WHERE nombre = ?";
+        $query = "SELECT COUNT(*) as total FROM dbo.Usuarios WHERE nombre = ?";
         $stmt = sqlsrv_query($this->conn, $query, array($nombre));
-        return sqlsrv_fetch($stmt) !== false;
+        
+        if ($stmt === false) {
+            return false;
+        }
+        
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        return $row && $row['total'] > 0;
+    }
+
+    /**
+     * Verifica si un email ya existe
+     * @param string $email Email
+     * @return bool True si existe, false si no
+     */
+    public function existeEmail($email) {
+        if (empty($email)) {
+            return false;
+        }
+        
+        $query = "SELECT COUNT(*) as total FROM dbo.Usuarios WHERE email = ?";
+        $stmt = sqlsrv_query($this->conn, $query, array($email));
+        
+        if ($stmt === false) {
+            return false;
+        }
+        
+        $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+        return $row && $row['total'] > 0;
     }
 
     /**
@@ -63,9 +90,10 @@ class Usuario {
      * @return bool True si se registró correctamente
      */
     public function registrar($datosUsuario) {
-        $query = "INSERT INTO dbo.Usuarios (nombre, contrasenas, tiposusuariosid) VALUES (?, ?, ?)";
+        $query = "INSERT INTO dbo.Usuarios (nombre, email, contrasenas, tiposusuariosid) VALUES (?, ?, ?, ?)";
         $params = array(
             $datosUsuario['nombre'],
+            $datosUsuario['email'],
             $datosUsuario['contrasena'],
             $datosUsuario['tiposusuarioid']
         );
@@ -133,20 +161,24 @@ class Usuario {
      * @return bool True si se actualizó correctamente
      */
     public function actualizar($id, $datos) {
+        $email = isset($datos['email']) ? $datos['email'] : null;
+        
         if (!empty($datos['contrasena'])) {
             // Si se proporciona nueva contraseña
-            $query = "UPDATE dbo.Usuarios SET nombre = ?, contrasenas = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
+            $query = "UPDATE dbo.Usuarios SET nombre = ?, email = ?, contrasenas = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
             $params = array(
                 $datos['nombre'],
+                $email,
                 password_hash($datos['contrasena'], PASSWORD_DEFAULT),
                 $datos['tiposusuarioid'],
                 $id
             );
         } else {
             // Sin cambiar contraseña
-            $query = "UPDATE dbo.Usuarios SET nombre = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
+            $query = "UPDATE dbo.Usuarios SET nombre = ?, email = ?, tiposusuariosid = ? WHERE ID_usuarios = ?";
             $params = array(
                 $datos['nombre'],
+                $email,
                 $datos['tiposusuarioid'],
                 $id
             );
@@ -173,9 +205,12 @@ class Usuario {
      * @return bool True si se creó correctamente
      */
     public function crear($datos) {
-        $query = "INSERT INTO dbo.Usuarios (nombre, contrasenas, tiposusuariosid) VALUES (?, ?, ?)";
+        $email = isset($datos['email']) ? $datos['email'] : null;
+        
+        $query = "INSERT INTO dbo.Usuarios (nombre, email, contrasenas, tiposusuariosid) VALUES (?, ?, ?, ?)";
         $params = array(
             $datos['nombre'],
+            $email,
             password_hash($datos['contrasena'], PASSWORD_DEFAULT),
             $datos['tiposusuarioid']
         );

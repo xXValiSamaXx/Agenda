@@ -105,6 +105,11 @@ switch ($page) {
         $controller = new AdminController();
         $controller->eliminarUsuario();
         break;
+    
+    case 'resetear-password':
+        $controller = new AdminController();
+        $controller->resetearPassword();
+        break;
 
     // Ruta por defecto
     default:

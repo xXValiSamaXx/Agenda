@@ -39,8 +39,11 @@ class AuthController {
 
                     $tipo = $this->usuarioModel->getTipoUsuario($usuario['tiposusuariosid']);
                     $_SESSION['user_type'] = $tipo;
+                    $_SESSION['user_type_id'] = $usuario['tiposusuariosid'];
+                    $_SESSION['user_name'] = $usuario['nombre'];
 
-                    if ($tipo == 'Admi') {
+                    // Aceptar tanto 'Admin' como 'Admi' (por compatibilidad)
+                    if (strcasecmp($tipo, 'Admin') === 0 || strcasecmp($tipo, 'Admi') === 0) {
                         header("Location: " . BASE_URL . "?page=admin");
                         exit();
                     } else {
@@ -72,17 +75,32 @@ class AuthController {
 
         if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $nombre = isset($_POST['nombre']) ? htmlspecialchars($_POST['nombre']) : '';
+            $email = isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '';
             $contrasena = isset($_POST['contrasena']) ? $_POST['contrasena'] : '';
             $tiposusuarioid = (strpos($nombre, "Admin") === 0) ? '2' : '1';
 
-            if (empty($nombre) || empty($contrasena)) {
+            // Validaciones
+            if (empty($nombre) || empty($email) || empty($contrasena)) {
                 $mensajeError = "Por favor, complete todos los campos.";
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $mensajeError = "Por favor, ingrese un correo electrónico válido.";
+            } elseif (strlen($nombre) < 3) {
+                $mensajeError = "El nombre de usuario debe tener al menos 3 caracteres.";
+            } elseif (strlen($contrasena) < 6) {
+                $mensajeError = "La contraseña debe tener al menos 6 caracteres.";
             } else {
+                // Verificar si el usuario ya existe
                 if ($this->usuarioModel->existeUsuario($nombre)) {
                     $mensajeError = "El nombre de usuario ya existe.";
-                } else {
+                } 
+                // Verificar si el email ya existe
+                elseif ($this->usuarioModel->existeEmail($email)) {
+                    $mensajeError = "El correo electrónico ya está registrado.";
+                } 
+                else {
                     $_SESSION['registro_usuario'] = [
                         'nombre' => $nombre,
+                        'email' => $email,
                         'contrasena' => password_hash($contrasena, PASSWORD_DEFAULT),
                         'tiposusuarioid' => $tiposusuarioid
                     ];
@@ -145,7 +163,10 @@ class AuthController {
     public static function verificarAdmin() {
         self::verificarAutenticacion();
         
-        if (!isset($_SESSION['user_type']) || $_SESSION['user_type'] != 'Admi') {
+        // Verificar si el usuario es Admin (case-insensitive por si hay variaciones)
+        if (!isset($_SESSION['user_type']) || 
+            (strcasecmp($_SESSION['user_type'], 'Admin') !== 0 && 
+             strcasecmp($_SESSION['user_type'], 'Admi') !== 0)) {
             header("Location: " . BASE_URL . "?page=academicas");
             exit();
         }

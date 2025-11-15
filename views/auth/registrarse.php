@@ -29,6 +29,20 @@ ob_start();
                     </span>
                     <input type="text" class="form-control" name="nombre" id="nombre" placeholder="Elige un nombre de usuario" required>
                 </div>
+                <small class="text-muted">Mínimo 3 caracteres</small>
+            </div>
+            
+            <div class="mb-3">
+                <label for="email" class="form-label">
+                    <i class="bi bi-envelope"></i> Correo Electrónico
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="bi bi-envelope-fill"></i>
+                    </span>
+                    <input type="email" class="form-control" name="email" id="email" placeholder="tu@email.com" required>
+                </div>
+                <small class="text-muted">Recibirás recordatorios de tus actividades</small>
             </div>
             
             <div class="mb-4">
@@ -39,8 +53,9 @@ ob_start();
                     <span class="input-group-text">
                         <i class="bi bi-lock-fill"></i>
                     </span>
-                    <input type="password" class="form-control" name="contrasena" id="contrasena" placeholder="Crea una contraseña segura" required>
+                    <input type="password" class="form-control" name="contrasena" id="contrasena" placeholder="Crea una contraseña segura" required minlength="6">
                 </div>
+                <small class="text-muted">Mínimo 6 caracteres</small>
             </div>
             
             <button type="submit" class="btn btn-primary w-100 mb-3">

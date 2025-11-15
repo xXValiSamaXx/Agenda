@@ -200,18 +200,49 @@ class AdminController {
                       strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
             
             $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
+            $email = isset($_POST['email']) ? trim($_POST['email']) : '';
             $contrasena = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : '';
             $tiposusuarioid = isset($_POST['tiposusuarioid']) ? intval($_POST['tiposusuarioid']) : 0;
 
             if (empty($nombre) || empty($contrasena) || $tiposusuarioid == 0) {
                 if ($isAjax) {
                     header('Content-Type: application/json');
-                    echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios.']);
+                    echo json_encode(['success' => false, 'message' => 'Nombre, contraseña y tipo de usuario son obligatorios.']);
                     exit();
                 }
-                $_SESSION['mensaje'] = "Todos los campos son obligatorios.";
+                $_SESSION['mensaje'] = "Nombre, contraseña y tipo de usuario son obligatorios.";
                 $_SESSION['tipo_mensaje'] = "error";
-            } elseif ($this->usuarioModel->existeUsuario($nombre)) {
+            } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'El correo electrónico no es válido.']);
+                    exit();
+                }
+                $_SESSION['mensaje'] = "El correo electrónico no es válido.";
+                $_SESSION['tipo_mensaje'] = "error";
+            } 
+            // VALIDACIÓN: Solo puede haber 1 Admin
+            elseif ($tiposusuarioid == 2) {
+                // Verificar si ya existe un Admin
+                $db = new Database();
+                $conn = $db->getConnection();
+                $query = "SELECT COUNT(*) as total FROM dbo.Usuarios WHERE tiposusuariosid = 2";
+                $stmt = sqlsrv_query($conn, $query);
+                $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+                
+                if ($row && $row['total'] > 0) {
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => false, 'message' => 'Ya existe un Administrador en el sistema. Solo puede haber uno.']);
+                        exit();
+                    }
+                    $_SESSION['mensaje'] = "Ya existe un Administrador en el sistema. Solo puede haber uno.";
+                    $_SESSION['tipo_mensaje'] = "error";
+                    header("Location: " . BASE_URL . "?page=usuarios");
+                    exit();
+                }
+            }
+            elseif ($this->usuarioModel->existeUsuario($nombre)) {
                 if ($isAjax) {
                     header('Content-Type: application/json');
                     echo json_encode(['success' => false, 'message' => 'El nombre de usuario ya existe.']);
@@ -219,9 +250,18 @@ class AdminController {
                 }
                 $_SESSION['mensaje'] = "El nombre de usuario ya existe.";
                 $_SESSION['tipo_mensaje'] = "error";
+            } elseif (!empty($email) && $this->usuarioModel->existeEmail($email)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'El correo electrónico ya está registrado.']);
+                    exit();
+                }
+                $_SESSION['mensaje'] = "El correo electrónico ya está registrado.";
+                $_SESSION['tipo_mensaje'] = "error";
             } else {
                 $datos = [
                     'nombre' => $nombre,
+                    'email' => !empty($email) ? $email : null,
                     'contrasena' => $contrasena,
                     'tiposusuarioid' => $tiposusuarioid
                 ];
@@ -260,6 +300,7 @@ class AdminController {
             
             $id = intval($_POST['id']);
             $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
+            $email = isset($_POST['email']) ? trim($_POST['email']) : '';
             $contrasena = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : '';
             $tiposusuarioid = isset($_POST['tiposusuarioid']) ? intval($_POST['tiposusuarioid']) : 0;
 
@@ -271,9 +312,40 @@ class AdminController {
                 }
                 $_SESSION['mensaje'] = "El nombre y tipo de usuario son obligatorios.";
                 $_SESSION['tipo_mensaje'] = "error";
-            } else {
+            } elseif (!empty($email) && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'El correo electrónico no es válido.']);
+                    exit();
+                }
+                $_SESSION['mensaje'] = "El correo electrónico no es válido.";
+                $_SESSION['tipo_mensaje'] = "error";
+            } 
+            // VALIDACIÓN: Solo puede haber 1 Admin
+            elseif ($tiposusuarioid == 2) {
+                // Verificar si ya existe otro Admin (que no sea este usuario)
+                $db = new Database();
+                $conn = $db->getConnection();
+                $query = "SELECT COUNT(*) as total FROM dbo.Usuarios WHERE tiposusuariosid = 2 AND ID_usuarios != ?";
+                $stmt = sqlsrv_query($conn, $query, array($id));
+                $row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_ASSOC);
+                
+                if ($row && $row['total'] > 0) {
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => false, 'message' => 'Ya existe un Administrador en el sistema. Solo puede haber uno.']);
+                        exit();
+                    }
+                    $_SESSION['mensaje'] = "Ya existe un Administrador en el sistema. Solo puede haber uno.";
+                    $_SESSION['tipo_mensaje'] = "error";
+                    header("Location: " . BASE_URL . "?page=usuarios");
+                    exit();
+                }
+            }
+            else {
                 $datos = [
                     'nombre' => $nombre,
+                    'email' => !empty($email) ? $email : null,
                     'contrasena' => $contrasena,
                     'tiposusuarioid' => $tiposusuarioid
                 ];
@@ -336,6 +408,78 @@ class AdminController {
                         exit();
                     }
                     $_SESSION['mensaje'] = "Error al eliminar el usuario.";
+                    $_SESSION['tipo_mensaje'] = "error";
+                }
+            }
+
+            header("Location: " . BASE_URL . "?page=usuarios");
+            exit();
+        }
+    }
+    
+    /**
+     * Resetear contraseña de usuario
+     */
+    public function resetearPassword() {
+        if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['id'])) {
+            $isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
+                      strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest';
+            
+            $id = intval($_POST['id']);
+            $nuevaContrasena = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : '';
+
+            if (empty($nuevaContrasena)) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'La nueva contraseña es obligatoria.']);
+                    exit();
+                }
+                $_SESSION['mensaje'] = "La nueva contraseña es obligatoria.";
+                $_SESSION['tipo_mensaje'] = "error";
+            } elseif (strlen($nuevaContrasena) < 6) {
+                if ($isAjax) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['success' => false, 'message' => 'La contraseña debe tener al menos 6 caracteres.']);
+                    exit();
+                }
+                $_SESSION['mensaje'] = "La contraseña debe tener al menos 6 caracteres.";
+                $_SESSION['tipo_mensaje'] = "error";
+            } else {
+                // Obtener datos actuales del usuario
+                $usuario = $this->usuarioModel->obtenerPorId($id);
+                
+                if ($usuario) {
+                    $datos = [
+                        'nombre' => $usuario['nombre'],
+                        'email' => $usuario['email'],
+                        'contrasena' => $nuevaContrasena,
+                        'tiposusuarioid' => $usuario['tiposusuariosid']
+                    ];
+
+                    if ($this->usuarioModel->actualizar($id, $datos)) {
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode(['success' => true, 'message' => 'Contraseña reseteada exitosamente.']);
+                            exit();
+                        }
+                        $_SESSION['mensaje'] = "Contraseña reseteada exitosamente.";
+                        $_SESSION['tipo_mensaje'] = "success";
+                    } else {
+                        if ($isAjax) {
+                            header('Content-Type: application/json');
+                            echo json_encode(['success' => false, 'message' => 'Error al resetear la contraseña.']);
+                            exit();
+                        }
+                        $_SESSION['mensaje'] = "Error al resetear la contraseña.";
+                        $_SESSION['tipo_mensaje'] = "error";
+                    }
+                } else {
+                    if ($isAjax) {
+                        header('Content-Type: application/json');
+                        echo json_encode(['success' => false, 'message' => 'Usuario no encontrado.']);
+                        exit();
+                    }
+                    $_SESSION['mensaje'] = "Usuario no encontrado.";
                     $_SESSION['tipo_mensaje'] = "error";
                 }
             }
